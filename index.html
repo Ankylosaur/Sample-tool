@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Voiced TH Pronunciation Practice</title>
+</head>
+<body>
+  <h2>Practice the Voiced "TH" Sound</h2>
+  <p>Example words: <strong>this</strong>, <strong>that</strong></p>
+  
+  <!-- Recording controls -->
+  <button id="record">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+  <p>Your Recording:</p>
+  <audio id="recording" controls></audio>
+  
+  <!-- Native speaker sample -->
+  <button id="native" onclick="playNative()">Play Native Example</button>
+  
+  <!-- Feedback area -->
+  <p id="feedback"></p>
+  
+  <script>
+    let mediaRecorder;
+    let recordedChunks = [];
+    
+    const recordButton = document.getElementById("record");
+    const stopButton = document.getElementById("stop");
+    const recordingAudio = document.getElementById("recording");
+    const feedbackParagraph = document.getElementById("feedback");
+
+    // Start recording when the user clicks "Start Recording"
+    recordButton.onclick = async function() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        recordedChunks = [];
+        
+        mediaRecorder.ondataavailable = function(event) {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = function() {
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          recordingAudio.src = URL.createObjectURL(blob);
+          feedbackParagraph.innerText = "Analyzing your pronunciation...";
+          
+          // Simulate analysis delay and provide dummy feedback
+          setTimeout(() => {
+            // In a real implementation, insert pronunciation analysis here.
+            feedbackParagraph.innerText = "Your pronunciation is close to the native example. Keep practicing!";
+          }, 2000);
+        };
+        
+        mediaRecorder.start();
+        recordButton.disabled = true;
+        stopButton.disabled = false;
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+        feedbackParagraph.innerText = "Microphone access error. Please check your device settings.";
+      }
+    };
+
+    // Stop recording
+    stopButton.onclick = function() {
+      mediaRecorder.stop();
+      recordButton.disabled = false;
+      stopButton.disabled = true;
+    };
+
+    // Play native speaker example (ensure 'native_th.mp3' is available on your server)
+    function playNative() {
+      const nativeAudio = new Audio("native_th.mp3");
+      nativeAudio.play();
+    }
+  </script>
+</body>
+</html>
